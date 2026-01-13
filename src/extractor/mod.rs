@@ -28,7 +28,15 @@ where
 {
     Ok(file
         .pages()
-        .map(|page| page.unwrap())
+        .filter_map(|page| {
+            match page {
+                Ok(p) => Some(p),
+                Err(e) => {
+                    log::warn!("Skipping page due to error: {:?}", e);
+                    None
+                }
+            }
+        })
         .collect::<Vec<PageRc>>())
 }
 
@@ -49,7 +57,15 @@ where
         resources
             .xobjects
             .iter()
-            .map(|(_name, &r)| resolver.get(r).unwrap())
+            .filter_map(|(_name, &r)| {
+                match resolver.get(r) {
+                    Ok(obj) => Some(obj),
+                    Err(e) => {
+                        log::warn!("Skipping xobject due to error: {:?}", e);
+                        None
+                    }
+                }
+            })
             .filter(|o| matches!(**o, pdf::object::XObject::Image(_))),
     );
 
