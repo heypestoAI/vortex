@@ -79,7 +79,13 @@ where
             _ => continue,
         };
 
-        let data = img.image_data(&resolver)?;
+        let data = match img.image_data(&resolver) {
+            Ok(d) => d,
+            Err(e) => {
+                log::warn!("image_data failed ({:?}), falling back to full stream decode", e);
+                img.inner.data(&resolver)?
+            }
+        };
 
         let img_dict = img.deref().to_owned();
 
