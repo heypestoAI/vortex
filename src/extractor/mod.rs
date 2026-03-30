@@ -83,7 +83,13 @@ where
             Ok(d) => d,
             Err(e) => {
                 log::warn!("image_data failed ({:?}), falling back to full stream decode", e);
-                img.inner.data(&resolver)?
+                match img.inner.data(&resolver) {
+                    Ok(d) => d,
+                    Err(e2) => {
+                        log::warn!("full stream decode also failed ({:?}), skipping image", e2);
+                        continue;
+                    }
+                }
             }
         };
 
